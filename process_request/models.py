@@ -26,12 +26,6 @@ class User(AbstractUser):
         """
         return '{} <{}>'.format(self.full_name, self.email)
 
-    def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Work in progress. Not sure if permissions are coming from Aeon request or not or how to check
-        if is_staff:
-            return True
-
 class MachineUser(AbstractBaseUser):
     username = None
     system_name = models.CharField(blank=False, max_length=255, unique=True)
