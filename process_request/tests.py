@@ -267,14 +267,16 @@ class TestRoutines(TestCase):
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
 
+    @aspace_vcr.use_cassette("aspace_request.json")
     @patch("asnake.client.web_client.ASnakeClient.get")
     def test_invalid_get_data(self, mock_as_get):
+        error_message = "This is an error!"
         mock_as_get.return_value.status_code = 404
         mock_as_get.return_value.text = ''
-        with self.assertRaises(Exception):
-            resp = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org").status_code
-            self.assertEqual(resp, 404)
-            mock_as_get.assert_called_once()
+        mock_as_get.return_value.json.return_value = {"error": error_message}
+        with self.assertRaises(Exception) as e:
+            Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
+        self.assertEqual(str(e.exception), error_message)
 
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
