@@ -291,8 +291,8 @@ class TestRoutines(TestCase):
         self.assertTrue(isinstance(delivered, dict))
 
         request_type = "foo"
-        with self.assertRaises(Exception, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
-            AeonRequester().get_request_data(request_type, **data)
+        with self.assertRaises(ValueError, msg="Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type)):
+            AeonRequester().get_request_data(request_type, "https://dimes.rockarch.org", **data)
 
 
 class TestViews(TestCase):
