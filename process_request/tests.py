@@ -267,6 +267,15 @@ class TestRoutines(TestCase):
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
 
+    @patch("asnake.client.web_client.ASnakeClient.get")
+    def test_invalid_get_data(self, mock_as_get):
+        mock_as_get.return_value.status_code = 404
+        mock_as_get.return_value.text = ''
+        with self.assertRaises(Exception):
+            resp = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org").status_code
+            self.assertEqual(resp, 404)
+            mock_as_get.assert_called_once()
+
     @patch("process_request.routines.Processor.get_data")
     def test_send_aeon_requests(self, mock_get_data):
         mock_get_data.return_value = [json_from_fixture("as_data.json")]
