@@ -16,7 +16,7 @@ from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_instance_data, get_locations, get_parent_title,
                       get_preferred_format, get_resource_creators,
                       get_rights_info, get_rights_status, get_rights_text,
-                      get_size, prepare_values)
+                      get_size, indicator_to_integer, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -211,6 +211,11 @@ class TestHelpers(TestCase):
                 ({"title": "bas", "level": "series", "component_id": "1"}, "bas, Series 1")]:
             result = get_parent_title(fixture)
             self.assertEqual(result, expected)
+
+    def test_indicator_to_integer(self):
+        for indicator, expected_parsed in [("23ab", 23), ("C", 2)]:
+            parsed = indicator_to_integer(indicator)
+            self.assertEqual(parsed, expected_parsed)
 
     # Test is commented out as the code is currently not used, and this allows us to shed a few configs
     # def test_aeon_client(self):
