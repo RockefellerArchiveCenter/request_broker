@@ -197,6 +197,12 @@ class TestHelpers(TestCase):
             instance = json_from_fixture(fixture)
             self.assertEqual(get_size(instance), size)
 
+        instance = json_from_fixture("instances_error.json")
+        error_message = "Error parsing instances"
+        with self.assertRaises(Exception) as e:
+            get_size(instance)
+        self.assertEqual(str(e.exception), error_message)
+
     def test_get_title(self):
         for fixture, expected in [
                 ({"title": "foo"}, "foo"),
