@@ -62,7 +62,7 @@ requests==2.26.0
     # via
     #   -r requirements.in
     #   archivessnake
-shortuuid==1.0.1
+shortuuid==1.0.8
     # via -r requirements.in
 six==1.16.0
     # via vcrpy
@@ -72,12 +72,6 @@ sqlparse==0.4.2
     # via django
 structlog==21.2.0
     # via archivessnake
-typing-extensions==3.10.0.2
-    # via
-    #   asgiref
-    #   gitpython
-    #   structlog
-    #   yarl
 urllib3==1.26.7
     # via requests
 vcrpy==4.1.1
