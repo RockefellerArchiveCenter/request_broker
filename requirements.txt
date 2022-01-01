@@ -27,7 +27,7 @@ django==3.2.10
     #   djangorestframework
 django-cors-headers==3.10.0
     # via -r requirements.in
-djangorestframework==3.12.4
+djangorestframework==3.13.1
     # via -r requirements.in
 gitdb==4.0.9
     # via gitpython
@@ -50,7 +50,9 @@ ordered-set==4.0.2
 psycopg2-binary==2.9.2
     # via -r requirements.in
 pytz==2021.3
-    # via django
+    # via
+    #   django
+    #   djangorestframework
 pyyaml==6.0
     # via
     #   archivessnake
@@ -72,12 +74,6 @@ sqlparse==0.4.2
     # via django
 structlog==21.4.0
     # via archivessnake
-typing-extensions==4.0.1
-    # via
-    #   asgiref
-    #   gitpython
-    #   structlog
-    #   yarl
 urllib3==1.26.7
     # via requests
 vcrpy==4.1.1
