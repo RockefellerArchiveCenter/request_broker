@@ -25,7 +25,7 @@ django==3.2.11
     #   -r requirements.in
     #   django-cors-headers
     #   djangorestframework
-django-cors-headers==3.10.1
+django-cors-headers==3.11.0
     # via -r requirements.in
 djangorestframework==3.13.1
     # via -r requirements.in
@@ -74,12 +74,6 @@ sqlparse==0.4.2
     # via django
 structlog==21.5.0
     # via archivessnake
-typing-extensions==4.0.1
-    # via
-    #   asgiref
-    #   gitpython
-    #   structlog
-    #   yarl
 urllib3==1.26.8
     # via requests
 vcrpy==4.1.1
