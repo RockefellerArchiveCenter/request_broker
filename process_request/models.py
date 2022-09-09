@@ -1,27 +1,27 @@
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
+    pass
 
-    archivist_group = [u"rac_archivists"]
-    donor_group = [u"rac_donors"]
-    researcher_group = [u"rac_researchers"]
 
-    AbstractUser._meta.get_field("email").blank = False
-    AbstractUser._meta.get_field("first_name").blank = False
-    AbstractUser._meta.get_field("last_name").blank = False
-    AbstractUser._meta.get_field("username").blank = False
-
-    @property
-    def full_name(self):
-        """
-        Return the first_name plus the last_name, with a space in between.
-        """
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip()
+class ConfigList(models.Model):
+    name = models.CharField(max_length=255)
 
     def __str__(self):
-        """
-        Returns the full name and email of a user.
-        """
-        return '{} <{}>'.format(self.full_name, self.email)
+        return self.name
+
+    def get_defaults(self, request_data={}):
+        list = {}
+        for pair in self.configpair_set.all():
+            value = request_data.get(pair.value) if pair.is_request_data_key else pair.value
+            list[pair.key] = value
+        return list
+
+
+class ConfigPair(models.Model):
+    key = models.CharField(max_length=255, help_text="Key for the configuration.")
+    value = models.CharField(max_length=255, help_text="Value to assign to the configuration key.")
+    is_request_data_key = models.BooleanField(default=False, help_text="If checked, uses the value provided as a key to get a value from the request data.")
+    config_list = models.ForeignKey(ConfigList, on_delete=models.CASCADE)
