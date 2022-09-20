@@ -4,12 +4,9 @@ import xml.etree.ElementTree as ET
 from asnake.aspace import ASpace
 from django.conf import settings
 from django.core.mail import send_mail
+from scalpl import Cut
 
-from .helpers import (get_container_indicators, get_dates,
-                      get_formatted_resource_id, get_parent_title,
-                      get_preferred_format, get_resource_creators,
-                      get_restricted_in_container, get_rights_info, get_size,
-                      get_url, list_chunks)
+from process_request import helpers, mappings
 
 
 class Processor(object):
@@ -17,6 +14,12 @@ class Processor(object):
     Processes requests by getting json information, checking restrictions, and getting
     delivery formats.
     """
+
+    def __init__(self):
+        self.aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
+                             username=settings.ARCHIVESSPACE["username"],
+                             password=settings.ARCHIVESSPACE["password"],
+                             repository=settings.ARCHIVESSPACE["repo_id"])
 
     def strip_tags(self, user_string):
         """Strips XML and HTML tags from a string."""
@@ -39,51 +42,48 @@ class Processor(object):
             data (list): A list containing JSON representations of ArchivesSpace
                          Archival Objects.
         """
-        aspace = ASpace(baseurl=settings.ARCHIVESSPACE["baseurl"],
-                        username=settings.ARCHIVESSPACE["username"],
-                        password=settings.ARCHIVESSPACE["password"],
-                        repository=settings.ARCHIVESSPACE["repo_id"])
-        chunked_list = list_chunks([uri.split("/")[-1] for uri in uri_list], 25)
+        chunked_list = helpers.list_chunks([uri.split("/")[-1] for uri in uri_list], 25)
         data = []
         for chunk in chunked_list:
-            objects = aspace.client.get("/repositories/{}/archival_objects".format(settings.ARCHIVESSPACE["repo_id"]),
-                                        params={
+            objects = self.aspace.client.get("/repositories/{}/archival_objects".format(settings.ARCHIVESSPACE["repo_id"]),
+                                             params={
                 "id_set": chunk,
                 "resolve": [
                     "ancestors",
                     "top_container", "top_container::container_locations",
                     "instances::digital_object"]})
             if objects.status_code == 200:
-                for item_json in objects.json():
-                    item_collection = item_json.get("ancestors")[-1].get("_resolved")
-                    parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
-                    format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
-                    restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
-                    resource_id = get_formatted_resource_id(item_collection, aspace.client)
-                    data.append({
-                        "ead_id": item_collection.get("ead_id"),
-                        "creators": get_resource_creators(item_collection, aspace.client),
-                        "restrictions": restrictions,
-                        "restrictions_text": self.strip_tags(restrictions_text),
-                        "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
-                        "collection_name": self.strip_tags(item_collection.get("title")),
-                        "parent": parent,
-                        "dates": get_dates(item_json, aspace.client),
-                        "resource_id": resource_id,
-                        "title": self.strip_tags(item_json.get("display_string")),
-                        "uri": item_json["uri"],
-                        "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
-                        "containers": get_container_indicators(item_json),
-                        "size": get_size(item_json["instances"]),
-                        "preferred_instance": {
-                            "format": format,
-                            "container": container,
-                            "subcontainer": subcontainer,
-                            "location": location,
-                            "barcode": barcode,
-                            "uri": container_uri,
-                        }
-                    })
+                data += objects.json()
+                # for item_json in objects.json():
+                #     item_collection = item_json.get("ancestors")[-1].get("_resolved")
+                #     parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
+                #     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
+                #     restrictions, restrictions_text = get_rights_info(item_json, aspace.client)
+                #     resource_id = get_formatted_resource_id(item_collection, aspace.client)
+                #     data.append({
+                #         "ead_id": item_collection.get("ead_id"),
+                #         "creators": get_resource_creators(item_collection, aspace.client),
+                #         "restrictions": restrictions,
+                #         "restrictions_text": self.strip_tags(restrictions_text),
+                #         "restricted_in_container": get_restricted_in_container(container_uri, aspace.client) if (settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]) else "",
+                #         "collection_name": self.strip_tags(item_collection.get("title")),
+                #         "parent": parent,
+                #         "dates": get_dates(item_json, aspace.client),
+                #         "resource_id": resource_id,
+                #         "title": self.strip_tags(item_json.get("display_string")),
+                #         "uri": item_json["uri"],
+                #         "dimes_url": get_url(item_json, dimes_baseurl, aspace.client),
+                #         "containers": get_container_indicators(item_json),
+                #         "size": get_size(item_json["instances"]),
+                #         "preferred_instance": {
+                #             "format": format,
+                #             "container": container,
+                #             "subcontainer": subcontainer,
+                #             "location": location,
+                #             "barcode": barcode,
+                #             "uri": container_uri,
+                #         }
+                #     })
             else:
                 raise Exception(objects.json()["error"])
         return data
@@ -228,17 +228,18 @@ class AeonRequester(object):
             ValueError: if request_type is not readingroom or duplicate.
         """
         processor = Processor()
+        client = processor.aspace.client
         fetched = processor.get_data(kwargs.get("items"), baseurl)
         if request_type == "readingroom":
-            data = self.prepare_reading_room_request(fetched, kwargs)
+            data = self.prepare_reading_room_request(fetched, client, kwargs)
         elif request_type == "duplication":
-            data = self.prepare_duplication_request(fetched, kwargs)
+            data = self.prepare_duplication_request(fetched, client, kwargs)
         else:
             raise ValueError(
                 "Unknown request type '{}', expected either 'readingroom' or 'duplication'".format(request_type))
         return {k: v for k, v in data.items() if v}
 
-    def prepare_reading_room_request(self, items, request_data):
+    def prepare_reading_room_request(self, items, client, request_data):
         """Maps reading room request data to Aeon fields.
 
         Args:
@@ -256,10 +257,10 @@ class AeonRequester(object):
             "Site": request_data.get("site"),
         }
 
-        request_data = self.parse_items(items)
+        request_data = self.parse_items(items, client)
         return dict(**self.request_defaults, **reading_room_defaults, **request_data)
 
-    def prepare_duplication_request(self, items, request_data):
+    def prepare_duplication_request(self, items, client, request_data):
         """Maps duplication request data to Aeon fields.
 
         Args:
@@ -276,10 +277,12 @@ class AeonRequester(object):
             "SpecialRequest": request_data.get("questions"),
             "SkipOrderEstimate": "Yes",
         }
-        request_data = self.parse_items(items, request_data.get("description", ""))
+        for item in items:
+            item.update({"description": request_data.get("description")})
+        request_data = self.parse_items(items, client)
         return dict(**self.request_defaults, **duplication_defaults, **request_data)
 
-    def parse_items(self, items, description=""):
+    def parse_items(self, items, client):
         """Assigns item data to Aeon request fields.
 
         Args:
@@ -292,23 +295,30 @@ class AeonRequester(object):
         for i in items:
             request_prefix = i["uri"].split("/")[-1]
             parsed["Request"].append(request_prefix)
-            parsed.update({
-                "EADNumber_{}".format(request_prefix): i['ead_id'],
-                "CallNumber_{}".format(request_prefix): i["resource_id"],
-                "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
-                "ItemAuthor_{}".format(request_prefix): i["creators"],
-                "ItemCitation_{}".format(request_prefix): i["uri"],
-                "ItemDate_{}".format(request_prefix): i["dates"],
-                "ItemInfo1_{}".format(request_prefix): i["title"],
-                "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
-                "ItemInfo3_{}".format(request_prefix): i["uri"],
-                "ItemInfo4_{}".format(request_prefix): description,
-                "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
-                "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
-                "ItemSubtitle_{}".format(request_prefix): i["parent"],
-                "ItemTitle_{}".format(request_prefix): i["collection_name"],
-                "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
-                "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"],
-                "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
-            })
+            for k, callable_or_key in mappings.AEON.items():
+                try:
+                    value = getattr(helpers, callable_or_key)(i, client)
+                except AttributeError:
+                    proxy = Cut(i)
+                    value = proxy.get(callable_or_key)
+                parsed[f"{k}_{request_prefix}"] = value
+            # parsed.update({
+            #     "EADNumber_{}".format(request_prefix): i['ead_id'],
+            #     "CallNumber_{}".format(request_prefix): i["resource_id"],
+            #     "GroupingField_{}".format(request_prefix): i["preferred_instance"]["uri"],
+            #     "ItemAuthor_{}".format(request_prefix): i["creators"],
+            #     "ItemCitation_{}".format(request_prefix): i["uri"],
+            #     "ItemDate_{}".format(request_prefix): i["dates"],
+            #     "ItemInfo1_{}".format(request_prefix): i["title"],
+            #     "ItemInfo2_{}".format(request_prefix): "" if i["restrictions"] == "open" else i["restrictions_text"],
+            #     "ItemInfo3_{}".format(request_prefix): i["uri"],
+            #     "ItemInfo4_{}".format(request_prefix): description,
+            #     "ItemInfo5_{}".format(request_prefix): i["restricted_in_container"],
+            #     "ItemNumber_{}".format(request_prefix): i["preferred_instance"]["barcode"],
+            #     "ItemSubtitle_{}".format(request_prefix): i["parent"],
+            #     "ItemTitle_{}".format(request_prefix): i["collection_name"],
+            #     "ItemVolume_{}".format(request_prefix): i["preferred_instance"]["container"],
+            #     "ItemIssue_{}".format(request_prefix): i["preferred_instance"]["subcontainer"],
+            #     "Location_{}".format(request_prefix): i["preferred_instance"]["location"]
+            # })
         return parsed

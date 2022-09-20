@@ -161,7 +161,28 @@ def get_preferred_format(item_json):
     return preferred
 
 
-def get_restricted_in_container(container_uri, client):
+def get_container(item_json, client):
+    print("here")
+    return get_preferred_format(item_json)[1]
+
+
+def get_subcontainer(item_json, client):
+    return get_preferred_format(item_json)[2]
+
+
+def get_location(item_json, client):
+    return get_preferred_format(item_json)[3]
+
+
+def get_barcode(item_json, client):
+    return get_preferred_format(item_json)[4]
+
+
+def get_grouping_field(item_json, client):
+    return get_preferred_format(item_json)[5]
+
+
+def get_restricted_in_container(item_json, client):
     """Fetches information about other restricted items in the same container.
 
     Args:
@@ -172,29 +193,31 @@ def get_restricted_in_container(container_uri, client):
             the same container.
     """
     restricted = []
-    this_page = 1
-    more = True
-    while more:
-        escaped_url = container_uri.replace('/', '\\/')
-        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
-        items_in_container = client.get(search_uri).json()
-        for item in items_in_container["results"]:
-            item_json = json.loads(item["json"])
-            status = get_rights_status(item_json, client)
-            if not status:
-                for ancestor_uri in item["_resolved_ancestors"]:
-                    for ancestor in item["_resolved_ancestors"][ancestor_uri]:
-                        status = get_rights_status(json.loads(ancestor["json"]), client)
-                        if status:
-                            break
-            if status in ["closed", "conditional"]:
-                for instance in item_json["instances"]:
-                    sub_container = instance["sub_container"]
-                    if all(["type_2" in sub_container, "indicator_2" in sub_container]):
-                        restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
-        this_page += 1
-        if this_page > items_in_container["last_page"]:
-            more = False
+    format, _, _, _, _, container_uri = get_preferred_format(item_json)
+    if settings.RESTRICTED_IN_CONTAINER and container_uri and format not in ["digital", "microform"]:
+        this_page = 1
+        more = True
+        while more:
+            escaped_url = container_uri.replace('/', '\\/')
+            search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{escaped_url}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+            items_in_container = client.get(search_uri).json()
+            for item in items_in_container["results"]:
+                item_json = json.loads(item["json"])
+                status = get_rights_status(item_json, client)
+                if not status:
+                    for ancestor_uri in item["_resolved_ancestors"]:
+                        for ancestor in item["_resolved_ancestors"][ancestor_uri]:
+                            status = get_rights_status(json.loads(ancestor["json"]), client)
+                            if status:
+                                break
+                if status in ["closed", "conditional"]:
+                    for instance in item_json["instances"]:
+                        sub_container = instance["sub_container"]
+                        if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                            restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
+            this_page += 1
+            if this_page > items_in_container["last_page"]:
+                more = False
     return ", ".join(restricted)
 
 
@@ -282,7 +305,7 @@ def get_rights_text(item_json, client):
     return text
 
 
-def get_resource_creators(resource, client):
+def get_resource_creators(item_json, client):
     """Gets all creators of a resource record and concatenate them into a string
     separated by commas.
 
@@ -292,6 +315,7 @@ def get_resource_creators(resource, client):
     Returns:
         creators (string): comma-separated list of resource creators.
     """
+    resource = item_json.get("ancestors")[-1].get("_resolved")
     creators = []
     if resource.get("linked_agents"):
         linked_agent_uris = [a["ref"].replace("/", "\\/") for a in resource["linked_agents"] if a["role"] == "creator"]
@@ -363,16 +387,24 @@ def get_size(instances):
             e["number"], inflect.engine().plural(e["extent_type"], e["number"])) for e in extents])
 
 
-def get_parent_title(obj_json):
+def get_parent_title(item_json, client):
     """Returns the title for an object's parent component.
 
     If a component identifier is present, appends that identifier plus the
     object's level.
     """
-    title = obj_json.get("title", obj_json.get("display_string")).strip()
-    if obj_json.get("component_id"):
-        title = "{}, {} {}".format(title, obj_json["level"].capitalize(), obj_json["component_id"])
+    title = None
+    if len(item_json.get("ancestors")) > 1:
+        obj_json = item_json.get("ancestors")[0].get("_resolved")
+        title = obj_json.get("title", obj_json.get("display_string")).strip()
+        if obj_json.get("component_id"):
+            title = "{}, {} {}".format(title, obj_json["level"].capitalize(), obj_json["component_id"])
     return title
+
+
+def get_collection_title(item_json, client):
+    item_collection = item_json.get("ancestors")[-1].get("_resolved")
+    return item_collection.get("title")
 
 
 def get_url(obj_json, host, client):
