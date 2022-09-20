@@ -6,5 +6,6 @@ inflect~=5.6
 ordered-set~=4.1
 psycopg2-binary~=2.9
 requests~=2.28
+scalpl~=0.4
 shortuuid~=1.0
 vcrpy~=4.2
