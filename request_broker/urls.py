@@ -21,6 +21,8 @@ from process_request.views import (DeliverDuplicationRequestView,
                                    DownloadCSVView, LinkResolverView,
                                    MailerView, ParseRequestView, PingView)
 
+admin.site.site_url = None
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/deliver-request/email", MailerView.as_view(), name="deliver-email"),
