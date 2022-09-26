@@ -11,6 +11,8 @@ fi
 ./wait-for-it.sh db:5432 -- echo "Apply database migrations"
 python manage.py migrate
 
+python manage.py shell < ./create_users.py
+
 #Start server
 echo "Starting server"
 python manage.py runserver 0.0.0.0:${APPLICATION_PORT}
