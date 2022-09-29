@@ -10,6 +10,7 @@ fi
 
 ./wait-for-it.sh db:5432 -- echo "Apply database migrations"
 python manage.py migrate
+python manage.py collectstatic
 
 #Start server
 echo "Starting server"

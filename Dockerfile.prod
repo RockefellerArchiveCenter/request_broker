@@ -28,8 +28,7 @@ RUN a2enmod wsgi
 
 COPY . /var/www/request-broker
 WORKDIR /var/www/request-broker
-RUN pip install -r requirements.txt
-RUN ./manage.py collectstatic
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE ${APPLICATION_PORT}
-ENTRYPOINT ["/code/entrypoint.sh", "apache"]
+ENTRYPOINT ["/var/www/request-broker/entrypoint.sh", "apache"]
