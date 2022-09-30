@@ -15,7 +15,7 @@ python manage.py migrate
 
 # Create default users when running locally
 # If this blows up, you likely need to add a DJANGO_SUPERUSER_USERNAME to config.py
-if [ "$CI" != "true" ]; then
+if [[ -z "${TRAVIS_CI}" ]]; then
     echo "Creating default users"
     python manage.py shell < ./create_users.py
 fi
