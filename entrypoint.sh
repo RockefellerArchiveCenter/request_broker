@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "Waiting for PostgreSQL..."
 
 # Create config.py if it doesn't exist
@@ -11,7 +13,12 @@ fi
 ./wait-for-it.sh db:5432 -- echo "Apply database migrations"
 python manage.py migrate
 
-python manage.py shell < ./create_users.py
+# Create default users when running locally
+# If this blows up, you likely need to add a DJANGO_SUPERUSER_USERNAME to config.py
+if [ "$CI" != "true" ]; then
+    echo "Creating default users"
+    python manage.py shell < ./create_users.py
+fi
 
 #Start server
 echo "Starting server"
