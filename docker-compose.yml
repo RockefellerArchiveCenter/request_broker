@@ -14,6 +14,7 @@ services:
     entrypoint: /code/entrypoint.sh
     environment:
       - APPLICATION_PORT=${APPLICATION_PORT:-8000}
+      - TRAVIS_CI=${TRAVIS_CI}
     volumes:
       - .:/code
     ports:
