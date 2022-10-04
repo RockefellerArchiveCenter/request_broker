@@ -10,12 +10,12 @@ fi
 
 ./wait-for-it.sh db:5432 -- echo "Apply database migrations"
 python manage.py migrate
-python manage.py collectstatic
 
 #Start server
 echo "Starting server"
 if [ "$1" == "apache" ]
 then
+    python manage.py collectstatic
     apache2ctl -D FOREGROUND
 else
     python manage.py runserver 0.0.0.0:${APPLICATION_PORT}
