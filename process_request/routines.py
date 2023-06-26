@@ -10,6 +10,7 @@ from .helpers import (get_container_indicators, get_dates,
                       get_preferred_format, get_resource_creators,
                       get_restricted_in_container, get_rights_info, get_size,
                       get_url, list_chunks)
+from .models import ConfigList
 
 
 class Processor(object):
@@ -207,28 +208,15 @@ class AeonRequester(object):
     """Creates transactions in Aeon by sending data to the Aeon API."""
 
     def __init__(self):
-        self.request_defaults = {
-            "AeonForm": "EADRequest",
-            "DocumentType": "Default",
-            "GroupingIdentifier": "GroupingField",
-            "GroupingOption_EADNumber": "FirstValue",
-            "GroupingOption_ItemInfo1": "Concatenate",
-            "GroupingOption_ItemDate": "Concatenate",
-            "GroupingOption_ItemTitle": "FirstValue",
-            "GroupingOption_ItemAuthor": "FirstValue",
-            "GroupingOption_ItemSubtitle": "FirstValue",
-            "GroupingOption_ItemVolume": "FirstValue",
-            "GroupingOption_ItemIssue": "Concatenate",
-            "GroupingOption_ItemInfo2": "Concatenate",
-            "GroupingOption_CallNumber": "FirstValue",
-            "GroupingOption_ItemInfo3": "FirstValue",
-            "GroupingOption_ItemCitation": "FirstValue",
-            "GroupingOption_ItemNumber": "FirstValue",
-            "GroupingOption_Location": "FirstValue",
-            "GroupingOption_ItemInfo5": "FirstValue",
-            "UserReview": "No",
-            "SubmitButton": "Submit Request",
-        }
+        self.request_defaults = self.get_config_defaults("Request Defaults")
+
+    def get_config_defaults(self, list_name, request_data=None):
+        """Returns dictionary of configuration defaults for a named list."""
+        try:
+            config_list = ConfigList.objects.get(name=list_name)
+            return config_list.get_defaults(request_data)
+        except ConfigList.DoesNotExist as e:
+            raise Exception(f"No ConfigList named {list_name} was found. Make sure a ConfigList matching that name is created in the Django Admin backend.") from e
 
     def get_request_data(self, request_type, baseurl, **kwargs):
         """Gets object data from ArchivesSpace and formats it for reading rooom
@@ -269,16 +257,9 @@ class AeonRequester(object):
         Returns:
             data: Submission data for Aeon.
         """
-        reading_room_defaults = {
-            "WebRequestForm": "DefaultRequest",
-            "RequestType": "Loan",
-            "ScheduledDate": request_data.get("scheduledDate"),
-            "SpecialRequest": request_data.get("questions"),
-            "Site": request_data.get("site"),
-        }
-
-        request_data = self.parse_items(items)
-        return dict(**self.request_defaults, **reading_room_defaults, **request_data)
+        reading_room_defaults = self.get_config_defaults("Reading Room Defaults", request_data)
+        parsed_data = self.parse_items(items)
+        return dict(**self.request_defaults, **reading_room_defaults, **parsed_data)
 
     def prepare_duplication_request(self, items, request_data):
         """Maps duplication request data to Aeon fields.
@@ -290,15 +271,9 @@ class AeonRequester(object):
         Returns:
             data: Submission data for Aeon.
         """
-        duplication_defaults = {
-            "WebRequestForm": "PhotoduplicationRequest",
-            "RequestType": "Copy",
-            "Format": request_data.get("format"),
-            "SpecialRequest": request_data.get("questions"),
-            "SkipOrderEstimate": "Yes",
-        }
-        request_data = self.parse_items(items, request_data.get("description", ""))
-        return dict(**self.request_defaults, **duplication_defaults, **request_data)
+        duplication_defaults = self.get_config_defaults("Duplication Defaults", request_data)
+        parsed_data = self.parse_items(items, request_data.get("description", ""))
+        return dict(**self.request_defaults, **duplication_defaults, **parsed_data)
 
     def parse_items(self, items, description=""):
         """Assigns item data to Aeon request fields.

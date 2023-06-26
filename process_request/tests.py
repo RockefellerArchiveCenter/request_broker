@@ -18,7 +18,6 @@ from .helpers import (get_container_indicators, get_dates, get_file_versions,
                       get_resource_creators, get_restricted_in_container,
                       get_rights_info, get_rights_status, get_rights_text,
                       get_size, indicator_to_integer, prepare_values)
-from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
 from .views import (DeliverDuplicationRequestView,
@@ -33,17 +32,6 @@ aspace_vcr = vcr.VCR(
     filter_query_parameters=['username', 'password'],
     filter_headers=['Authorization', 'X-ArchivesSpace-Session'],
 )
-
-
-class TestUsers(TestCase):
-
-    def test_user(self):
-        user = User(
-            first_name="Patrick",
-            last_name="Galligan",
-            email="pgalligan@rockarch.org")
-        self.assertEqual(user.full_name, "Patrick Galligan")
-        self.assertEqual(str(user), "Patrick Galligan <pgalligan@rockarch.org>")
 
 
 class TestHelpers(TestCase):

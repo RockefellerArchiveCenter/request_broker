@@ -31,9 +31,21 @@ Or, if you want to remove all data
 
 ## Configuration
 
-The request broker manages configuration by setting environment variables. These variables can be seen in `docker-compose.yml`.
+The request broker manages most configuration through environment variables. These
+variables can be seen in `docker-compose.yml`.
 
-Deployment using the `docker-compose.prod.yml` or `docker-compose.dev.yml` files requires the presence of an `.env.prod` or `.env.dev` file in the root directory of the application. The environment variables included in those files should match the variables in `docker-compose.yml`, although the values assigned to those variables may change.
+Configuration for request defaults is managed in the Django Admin UI. To access
+this UI, you'll need to log in to the Admin backend (located at `/admin/`)
+with a user account with the `is_staff` boolean set to `True`. If you're running
+this application in a container and have the `DJANGO_SUPERUSER_USERNAME`,
+`DJANGO_SUPERUSER_PASSWORD` and `DJANGO_SUPERUSER_EMAIL` variables set, a user
+will be created on your behalf if a user with that username does not already exist.
+
+Deployment using the `docker-compose.prod.yml` or `docker-compose.dev.yml` files
+requires the presence of an `.env.prod` or `.env.dev` file in the root directory
+of the application. The environment variables included in those files should
+match the variables in `docker-compose.yml`, although the values assigned to
+those variables may change.
 
 ## Services
 
