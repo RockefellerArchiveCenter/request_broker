@@ -187,7 +187,8 @@ def get_restricted_in_container(container_uris, client):
     this_page = 1
     more = True
     while more:
-        container_string = f'\"{" OR ".join(container_uris.split(", "))}\"'
+        joined_string = '" OR "'.join(container_uris.split(", "))
+        container_string = f'\"{joined_string}\"'
         search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{container_string}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
         items_in_container = client.get(search_uri).json()
         for item in items_in_container["results"]:
