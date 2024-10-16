@@ -183,31 +183,34 @@ def get_restricted_in_container(container_uris, client):
         restricted (string): a comma-separated list of other restricted items in
             the same container.
     """
+    all_items = []
+    for container_uri in container_uris.split(", "):
+        this_page = 1
+        more = True
+        while more:
+            search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:\"{container_uri}\"&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
+            items_in_container = client.get(search_uri).json()
+            all_items += (items_in_container['results'])
+            this_page += 1
+            if this_page > items_in_container['last_page']:
+                more = False
+
     restricted = []
-    this_page = 1
-    more = True
-    while more:
-        joined_string = '" OR "'.join(container_uris.split(", "))
-        container_string = f'\"{joined_string}\"'
-        search_uri = f"repositories/{settings.ARCHIVESSPACE['repo_id']}/search?q=top_container_uri_u_sstr:{container_string}&page={this_page}&fields[]=uri,json,ancestors&resolve[]=ancestors:id&type[]=archival_object&page_size=25"
-        items_in_container = client.get(search_uri).json()
-        for item in items_in_container["results"]:
-            item_json = json.loads(item["json"])
-            status = get_rights_status(item_json, client)
-            if not status:
-                for ancestor_uri in item["_resolved_ancestors"]:
-                    for ancestor in item["_resolved_ancestors"][ancestor_uri]:
-                        status = get_rights_status(json.loads(ancestor["json"]), client)
-                        if status:
-                            break
-            if status in ["closed", "conditional"]:
-                for instance in item_json["instances"]:
-                    sub_container = instance.get("sub_container", [])
-                    if all(["type_2" in sub_container, "indicator_2" in sub_container]):
-                        restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
-        this_page += 1
-        if this_page > items_in_container["last_page"]:
-            more = False
+    for item in all_items:
+        item_json = json.loads(item["json"])
+        status = get_rights_status(item_json, client)
+        if not status:
+            for ancestor_uri in item["_resolved_ancestors"]:
+                for ancestor in item["_resolved_ancestors"][ancestor_uri]:
+                    status = get_rights_status(json.loads(ancestor["json"]), client)
+                    if status:
+                        break
+        if status in ["closed", "conditional"]:
+            for instance in item_json["instances"]:
+                sub_container = instance.get("sub_container", [])
+                if all(["type_2" in sub_container, "indicator_2" in sub_container]):
+                    restricted.append(f"{sub_container['type_2'].capitalize()} {sub_container['indicator_2']}")
+
     return ", ".join(restricted)
 
 
