@@ -22,9 +22,10 @@ def get_active_rights_acts(acts):
     """Evaluates rights statement act end dates to determine if it is still active."""
     current_date = datetime.now()
     for idx, act in reversed(list(enumerate(acts))):
-        statement_end = datetime.strptime(act['end_date'], "%Y-%m-%d")
-        if (current_date > statement_end):
-            acts.pop(idx)
+        if act.get('end_date'):
+            statement_end = datetime.strptime(act['end_date'], "%Y-%m-%d")
+            if (current_date > statement_end):
+                acts.pop(idx)
     return acts
 
 
