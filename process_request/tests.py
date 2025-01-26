@@ -308,7 +308,10 @@ class TestHelpers(TestCase):
     def test_get_rights_status(self):
         for fixture, status in [
                 ("object_restricted_note.json", "closed"),
-                ("object_restricted_note_conditional.json", "conditional"),
+                ("object_restricted_note_conditional_access_available.json", "conditional"),
+                ("object_restricted_note_conditional_access_unavailable.json", "conditional"),
+                ("object_restricted_note_conditional_available.json", "conditional"),
+                ("object_restricted_note_conditional_unavailable.json", "conditional"),
                 ("object_restricted_note_open.json", "open"),
                 ("object_restricted_note_long_open.json", "open"),
                 ("object_restricted_note_longer_open.json", "open"),
@@ -316,13 +319,17 @@ class TestHelpers(TestCase):
                 ("object_restricted_rights_statement.json", "closed"),
                 ("object_restricted_rights_statement_conditional.json", "conditional")]:
             item = json_from_fixture(fixture)
-            self.assertEqual(get_rights_status(item, self.client), status)
+            output = get_rights_status(item, self.client)
+            self.assertEqual(output, status, f'Expected {status} status for fixture {fixture}, got {output}')
 
     def test_get_rights_text(self):
         for fixture, status in [
                 ("object_restricted_boolean.json", None),
                 ("object_restricted_note.json", "Restricted - Open 2025"),
-                ("object_restricted_note_conditional.json", "Access copy unavailable. Please contact an archivist."),
+                ("object_restricted_note_conditional_access_available.json", "Open for research. Access copy available."),
+                ("object_restricted_note_conditional_access_unavailable.json", "Open for research. Access copy currently unavailable. Please contact an archivist."),
+                ("object_restricted_note_conditional_available.json", "Open for research. Digital access copy available."),
+                ("object_restricted_note_conditional_unavailable.json", "Open for research. Digital access copy currently unavailable. Please contact a RAC archivist for further instruction."),
                 ("object_restricted_note_open.json", "Open for research."),
                 ("object_restricted_rights_statement.json", "Rights statement note."),
                 ("object_restricted_rights_statement_conditional.json", None)]:
