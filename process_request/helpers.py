@@ -16,6 +16,7 @@ from .models import ReadingRoomCache
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = ["Open for research", "Open for scholarly research"]
 CLOSED_TEXT = ["Restricted"]
+CONDITIONAL_TEXT = ["Access copy available", "Access copy currently unavailable"]
 
 
 def get_active_rights_acts(acts):
@@ -279,12 +280,12 @@ def get_rights_status(item_json, client):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
-        if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CLOSED_TEXT for n in notes]):
-            status = "closed"
-            if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in OPEN_TEXT for n in notes]):
-                status = "open"
+        if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CONDITIONAL_TEXT for n in notes]):
+            status = "conditional"
         elif any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in OPEN_TEXT for n in notes]):
             status = "open"
+        elif any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CLOSED_TEXT for n in notes]):
+            status = "closed"
         else:
             status = "conditional"
     return status
