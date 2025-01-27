@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 import inflect
+import requests
 import shortuuid
 from asnake.utils import (format_resource_id, get_date_display, get_note_text,
                           text_in_note)
@@ -97,6 +98,26 @@ def get_locations(top_container_info):
     else:
         locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations", [])])
     return locations
+
+
+def get_online_asset(api_uri):
+    """"Checks to see if the item has an online asset.
+
+    Args:
+        api_url (string): full URL for the object in API.
+
+    Returns:
+        bool: True if online asset exists, otherwise False.
+    """
+    online_asset = False
+    try:
+        response = requests.get(api_uri)
+        response.raise_for_status()
+        if response.json().get('online'):
+            online_asset = True
+    except Exception:
+        pass
+    return online_asset
 
 
 def prepare_values(values_list):
