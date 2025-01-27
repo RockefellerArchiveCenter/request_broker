@@ -14,11 +14,11 @@ from rest_framework.test import APIRequestFactory
 
 from .helpers import (get_active_rights_acts, get_container_indicators,
                       get_dates, get_file_versions, get_formatted_resource_id,
-                      get_instance_data, get_locations, get_parent_title,
-                      get_preferred_format, get_resource_creators,
-                      get_restricted_in_container, get_rights_info,
-                      get_rights_status, get_rights_text, get_size,
-                      indicator_to_integer, prepare_values)
+                      get_instance_data, get_locations, get_online_asset,
+                      get_parent_title, get_preferred_format,
+                      get_resource_creators, get_restricted_in_container,
+                      get_rights_info, get_rights_status, get_rights_text,
+                      get_size, indicator_to_integer, prepare_values)
 from .models import User
 from .routines import AeonRequester, Mailer, Processor
 from .test_helpers import json_from_fixture, random_list, random_string
@@ -243,6 +243,24 @@ class TestHelpers(TestCase):
             obj_data = json_from_fixture(fixture)
             self.assertEqual(get_locations(obj_data), expected)
 
+    @patch("requests.get")
+    def test_get_online_asset(self, mock_get):
+        # Test asset online
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {'online': True}
+        output = get_online_asset("https://test-url.org")
+        self.assertEqual(output, True)
+
+        # Test asset not online
+        mock_get.return_value.json.return_value = {'online': False}
+        output = get_online_asset("https://test-url.org")
+        self.assertEqual(output, False)
+
+        # Test URL not found
+        mock_get.return_value.status_code = 404
+        output = get_online_asset("https://test-url.org")
+        self.assertEqual(output, False)
+
     def test_get_instance_data(self):
         obj_data = json_from_fixture("digital_object_instance.json")
         expected_values = ("digital_object", "Digital Object: digital object", None, "http://google.com", "238475",
@@ -308,7 +326,10 @@ class TestHelpers(TestCase):
     def test_get_rights_status(self):
         for fixture, status in [
                 ("object_restricted_note.json", "closed"),
-                ("object_restricted_note_conditional.json", "conditional"),
+                ("object_restricted_note_conditional_access_available.json", "conditional"),
+                ("object_restricted_note_conditional_access_unavailable.json", "conditional"),
+                ("object_restricted_note_conditional_available.json", "conditional"),
+                ("object_restricted_note_conditional_unavailable.json", "conditional"),
                 ("object_restricted_note_open.json", "open"),
                 ("object_restricted_note_long_open.json", "open"),
                 ("object_restricted_note_longer_open.json", "open"),
@@ -316,13 +337,17 @@ class TestHelpers(TestCase):
                 ("object_restricted_rights_statement.json", "closed"),
                 ("object_restricted_rights_statement_conditional.json", "conditional")]:
             item = json_from_fixture(fixture)
-            self.assertEqual(get_rights_status(item, self.client), status)
+            output = get_rights_status(item, self.client)
+            self.assertEqual(output, status, f'Expected {status} status for fixture {fixture}, got {output}')
 
     def test_get_rights_text(self):
         for fixture, status in [
                 ("object_restricted_boolean.json", None),
                 ("object_restricted_note.json", "Restricted - Open 2025"),
-                ("object_restricted_note_conditional.json", "Access copy unavailable. Please contact an archivist."),
+                ("object_restricted_note_conditional_access_available.json", "Open for research. Access copy available."),
+                ("object_restricted_note_conditional_access_unavailable.json", "Open for research. Access copy currently unavailable. Please contact an archivist."),
+                ("object_restricted_note_conditional_available.json", "Open for research. Digital access copy available."),
+                ("object_restricted_note_conditional_unavailable.json", "Open for research. Digital access copy currently unavailable. Please contact a RAC archivist for further instruction."),
                 ("object_restricted_note_open.json", "Open for research."),
                 ("object_restricted_rights_statement.json", "Rights statement note."),
                 ("object_restricted_rights_statement_conditional.json", None)]:
@@ -400,12 +425,17 @@ class TestRoutines(TestCase):
             self.assertEqual(parsed["submit"], submit)
             self.assertEqual(parsed["submit_reason"], reason)
 
-        # Ensure objects with attached digital objects return correct message
+        # Ensure objects return correct message based on instances
         for format, submit in [
-                ("Digital", True), ("digital_object", False), ("Mixed materials", True), ("microfilm", True)]:
+                ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value[0]["preferred_instance"]["format"] = format
             parsed = Processor().parse_item(item["uri"], "https://dimes.rockarch.org")
             self.assertEqual(parsed["submit"], submit)
+
+        for online_asset, submit in [(True, False), (False, True)]:
+            mock_get_data.return_value[0]['has_online_asset'] = online_asset
+            item = Processor().parse_batch([item["uri"]], "https://dimes.rockarch.org")[0]
+            self.assertEqual(item["submit"], submit)
 
         # Ensure objects without instances return correct message
         mock_get_data.return_value[0]["preferred_instance"] = {"format": None, "container": None,
@@ -439,10 +469,15 @@ class TestRoutines(TestCase):
             self.assertEqual(item["submit"], submit)
             self.assertEqual(item["submit_reason"], reason)
 
-        # Ensure objects with attached digital objects return correct message
+        # Ensure objects return correct message based on format
         for format, submit in [
-                ("Digital", True), ("digital_object", False), ("Mixed materials", True), ("microfilm", True)]:
+                ("Mixed materials", True), ("microfilm", True)]:
             mock_get_data.return_value[0]["preferred_instance"]["format"] = format
+            item = Processor().parse_batch([item["uri"]], "https://dimes.rockarch.org")[0]
+            self.assertEqual(item["submit"], submit)
+
+        for online_asset, submit in [(True, False), (False, True)]:
+            mock_get_data.return_value[0]['has_online_asset'] = online_asset
             item = Processor().parse_batch([item["uri"]], "https://dimes.rockarch.org")[0]
             self.assertEqual(item["submit"], submit)
 
@@ -476,11 +511,14 @@ class TestRoutines(TestCase):
     @aspace_vcr.use_cassette("aspace_request.json")
     @override_settings(RESTRICTED_IN_CONTAINER=False)
     @patch("process_request.routines.get_resource_creators")
-    def test_get_data(self, mock_creators):
+    @patch("process_request.routines.get_online_asset")
+    def test_get_data(self, mock_online_asset, mock_creators):
+        mock_online_asset.return_value = False
         mock_creators.return_value = "Philanthropy Foundation"
         get_as_data = Processor().get_data(["/repositories/2/archival_objects/1134638"], "https://dimes.rockarch.org")
         self.assertTrue(isinstance(get_as_data, list))
         self.assertEqual(len(get_as_data), 1)
+        mock_online_asset.assert_called_once_with("https://api.rockarch.org/objects/fPnaikmSZBSHrECeYVACu2")
 
     @aspace_vcr.use_cassette("aspace_request.json")
     @patch("asnake.client.web_client.ASnakeClient.get")

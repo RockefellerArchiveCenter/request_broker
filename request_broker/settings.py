@@ -144,6 +144,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOWED_ORIGINS = config.DJANGO_CORS_ALLOWED_ORIGINS
 DIMES_BASEURL = config.DIMES_BASEURL
+API_BASEURL = config.API_BASEURL
 
 # Content Security Policy
 CSP_IMG_SRC = ("'self'")
