@@ -7,10 +7,10 @@ from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 
 from .helpers import (get_container_indicators, get_dates,
-                      get_formatted_resource_id, get_parent_title,
-                      get_preferred_format, get_resource_creators,
-                      get_restricted_in_container, get_rights_info, get_size,
-                      get_url, list_chunks)
+                      get_formatted_resource_id, get_online_asset,
+                      get_parent_title, get_preferred_format,
+                      get_resource_creators, get_restricted_in_container,
+                      get_rights_info, get_size, get_url, list_chunks)
 
 
 class Processor(object):
@@ -58,6 +58,7 @@ class Processor(object):
                     "instances::digital_object"]})
             if objects.status_code == 200:
                 for item_json in objects.json():
+                    dimes_url = get_url(item_json, aspace.client, dimes_baseurl)
                     item_collection = item_json.get("ancestors")[-1].get("_resolved")
                     parent = self.strip_tags(get_parent_title(item_json.get("ancestors")[0].get("_resolved"))) if len(item_json.get("ancestors")) > 1 else None
                     format, container, subcontainer, location, barcode, container_uri = get_preferred_format(item_json)
@@ -76,9 +77,10 @@ class Processor(object):
                         "resource_id": resource_id,
                         "title": self.strip_tags(item_json.get("display_string")),
                         "uri": item_json["uri"],
-                        "dimes_url": get_url(item_json, aspace.client, dimes_baseurl),
+                        "dimes_url": dimes_url,
                         "containers": get_container_indicators(item_json),
                         "size": get_size(item_json["instances"]),
+                        "has_online_asset": get_online_asset(dimes_url.replace(dimes_baseurl, settings.API_BASEURL)),
                         "preferred_instance": {
                             "format": format,
                             "container": self.strip_tags(container),
@@ -111,7 +113,7 @@ class Processor(object):
         elif item["restrictions"] == "closed":
             submit = False
             reason = _("This item is currently unavailable for request. It will not be included in request. Reason: {}").format(item.get("restrictions_text"))
-        elif item["preferred_instance"]["format"].lower() == "digital_object":
+        elif item["has_online_asset"]:
             submit = False
             reason = _("This item is already available online. It will not be included in request.")
         elif item["restrictions"] == "conditional":
