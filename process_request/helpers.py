@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 import inflect
+import requests
 import shortuuid
 from asnake.utils import (format_resource_id, get_date_display, get_note_text,
                           text_in_note)
@@ -16,6 +17,7 @@ from .models import ReadingRoomCache
 CONFIDENCE_RATIO = 97  # Minimum confidence ratio to match against.
 OPEN_TEXT = ["Open for research", "Open for scholarly research"]
 CLOSED_TEXT = ["Restricted"]
+CONDITIONAL_TEXT = ["Access copy available", "Access copy currently unavailable"]
 
 
 def get_active_rights_acts(acts):
@@ -96,6 +98,26 @@ def get_locations(top_container_info):
     else:
         locations = ",".join([make_short_location(c["_resolved"]) for c in top_container_info.get("container_locations", [])])
     return locations
+
+
+def get_online_asset(api_uri):
+    """"Checks to see if the item has an online asset.
+
+    Args:
+        api_url (string): full URL for the object in API.
+
+    Returns:
+        bool: True if online asset exists, otherwise False.
+    """
+    online_asset = False
+    try:
+        response = requests.get(api_uri)
+        response.raise_for_status()
+        if response.json().get('online'):
+            online_asset = True
+    except Exception:
+        pass
+    return online_asset
 
 
 def prepare_values(values_list):
@@ -279,12 +301,12 @@ def get_rights_status(item_json, client):
                 status = "conditional"
     elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
-        if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CLOSED_TEXT for n in notes]):
-            status = "closed"
-            if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in OPEN_TEXT for n in notes]):
-                status = "open"
+        if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CONDITIONAL_TEXT for n in notes]):
+            status = "conditional"
         elif any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in OPEN_TEXT for n in notes]):
             status = "open"
+        elif any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CLOSED_TEXT for n in notes]):
+            status = "closed"
         else:
             status = "conditional"
     return status
