@@ -317,11 +317,14 @@ class TestHelpers(TestCase):
         self.assertEqual(prepare_values(values_list), expected_parsed)
 
     def test_get_rights_info(self):
-        item = json_from_fixture("object_restricted_ancestor.json")
-        info = get_rights_info(item, self.client)
-        self.assertTrue(isinstance(info, tuple))
-        self.assertEqual(info[0], "closed")
-        self.assertEqual(info[1], "Ancestor Note")
+        for fixture, status, text in [
+                ("object_restricted_ancestor_rights_statement.json", "open", None),
+                ("object_restricted_ancestor_note.json", "closed", "Restricted - Open 2025")]:
+            item = json_from_fixture(fixture)
+            info = get_rights_info(item, self.client)
+            self.assertTrue(isinstance(info, tuple))
+            self.assertEqual(info[0], status)
+            self.assertEqual(info[1], text)
 
     def test_get_rights_status(self):
         for fixture, status in [
@@ -334,8 +337,8 @@ class TestHelpers(TestCase):
                 ("object_restricted_note_long_open.json", "open"),
                 ("object_restricted_note_longer_open.json", "open"),
                 ("object_restricted_note_scholarly_open.json", "open"),
-                ("object_restricted_rights_statement.json", "closed"),
-                ("object_restricted_rights_statement_conditional.json", "conditional")]:
+                ("object_restricted_rights_statement.json", None),
+                ("object_restricted_rights_statement_conditional.json", None)]:
             item = json_from_fixture(fixture)
             output = get_rights_status(item, self.client)
             self.assertEqual(output, status, f'Expected {status} status for fixture {fixture}, got {output}')
@@ -349,7 +352,7 @@ class TestHelpers(TestCase):
                 ("object_restricted_note_conditional_available.json", "Open for research. Digital access copy available."),
                 ("object_restricted_note_conditional_unavailable.json", "Open for research. Digital access copy currently unavailable. Please contact a RAC archivist for further instruction."),
                 ("object_restricted_note_open.json", "Open for research."),
-                ("object_restricted_rights_statement.json", "Rights statement note."),
+                ("object_restricted_rights_statement.json", None),
                 ("object_restricted_rights_statement_conditional.json", None)]:
             item = json_from_fixture(fixture)
             self.assertEqual(get_rights_text(item, self.client), status)
@@ -418,7 +421,7 @@ class TestRoutines(TestCase):
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
+                ("conditional", "foobar", True, "This item may require additional archival intervention but will be included with your request. Reason: foobar")]:
             mock_get_data.return_value[0]["restrictions"] = restrictions
             mock_get_data.return_value[0]["restrictions_text"] = text
             parsed = Processor().parse_item(mock_get_data.return_value[0]["uri"], "https://dimes.rockarch.org")
@@ -458,7 +461,7 @@ class TestRoutines(TestCase):
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
+                ("conditional", "foobar", True, "This item may require additional archival intervention but will be included with your request. Reason: foobar")]:
             mock_get_data.return_value[0]["restrictions"] = restrictions
             mock_get_data.return_value[0]["restrictions_text"] = text
             parsed = Processor().parse_batch([mock_get_data.return_value[0]["uri"]], "https://dimes.rockarch.org")
