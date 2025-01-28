@@ -418,7 +418,7 @@ class TestRoutines(TestCase):
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
+                ("conditional", "foobar", True, "This item may require additional archival intervention but will be included with your request. Reason: foobar")]:
             mock_get_data.return_value[0]["restrictions"] = restrictions
             mock_get_data.return_value[0]["restrictions_text"] = text
             parsed = Processor().parse_item(mock_get_data.return_value[0]["uri"], "https://dimes.rockarch.org")
@@ -458,7 +458,7 @@ class TestRoutines(TestCase):
         for restrictions, text, submit, reason in [
                 ("closed", "foo", False, "This item is currently unavailable for request. It will not be included in request. Reason: foo"),
                 ("open", "bar", True, None),
-                ("conditional", "foobar", True, "This item may be currently unavailable for request. It will be included in request. Reason: foobar")]:
+                ("conditional", "foobar", True, "This item may require additional archival intervention but will be included with your request. Reason: foobar")]:
             mock_get_data.return_value[0]["restrictions"] = restrictions
             mock_get_data.return_value[0]["restrictions_text"] = text
             parsed = Processor().parse_batch([mock_get_data.return_value[0]["uri"]], "https://dimes.rockarch.org")

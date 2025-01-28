@@ -117,7 +117,7 @@ class Processor(object):
             submit = False
             reason = _("This item is already available online. It will not be included in request.")
         elif item["restrictions"] == "conditional":
-            reason = _("This item may be currently unavailable for request. It will be included in request. Reason: {}").format(item.get("restrictions_text"))
+            reason = _("This item may require additional archival intervention but will be included with your request. Reason: {}").format(item.get("restrictions_text"))
         return submit, reason
 
     def parse_item(self, uri, baseurl):
