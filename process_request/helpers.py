@@ -292,14 +292,14 @@ def get_rights_status(item_json, client):
         status: One of "closed", "conditional", "open", None
     """
     status = None
-    if item_json.get("rights_statements"):
-        for stmnt in item_json["rights_statements"]:
-            active_acts = get_active_rights_acts(stmnt.get("acts", []))
-            if any([act["restriction"].lower() == "disallow" for act in active_acts]):
-                status = "closed"
-            elif any([act["restriction"].lower() == "conditional" for act in active_acts]):
-                status = "conditional"
-    elif [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
+    # if item_json.get("rights_statements"):
+    #     for stmnt in item_json["rights_statements"]:
+    #         active_acts = get_active_rights_acts(stmnt.get("acts", []))
+    #         if any([act["restriction"].lower() == "disallow" for act in active_acts]):
+    #             status = "closed"
+    #         elif any([act["restriction"].lower() == "conditional" for act in active_acts]):
+    #             status = "conditional"
+    if [n for n in item_json.get("notes", []) if n.get("type") == "accessrestrict"]:
         notes = [n for n in item_json["notes"] if n.get("type") == "accessrestrict"]
         if any([text_in_note(n, text, client, confidence=CONFIDENCE_RATIO) for text in CONDITIONAL_TEXT for n in notes]):
             status = "conditional"
@@ -324,12 +324,12 @@ def get_rights_text(item_json, client):
     if [n for n in item_json.get("notes", []) if (n.get("type") == "accessrestrict" and n["publish"])]:
         text = ", ".join(
             [", ".join(get_note_text(n, client)) for n in item_json["notes"] if (n.get("type") == "accessrestrict" and n["publish"])])
-    elif item_json.get("rights_statements"):
-        string = ""
-        for stmnt in item_json["rights_statements"]:
-            for note in stmnt["notes"]:
-                string += ", ".join(note["content"])
-        text = string if string else None
+    # elif item_json.get("rights_statements"):
+    #     string = ""
+    #     for stmnt in item_json["rights_statements"]:
+    #         for note in stmnt["notes"]:
+    #             string += ", ".join(note["content"])
+    #     text = string if string else None
     return text
 
 
