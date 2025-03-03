@@ -10,13 +10,13 @@ asgiref==3.8.1
     # via django
 attrs==25.1.0
     # via archivessnake
-boltons==24.1.0
+boltons==25.0.0
     # via archivessnake
 certifi==2025.1.31
     # via requests
 charset-normalizer==3.4.1
     # via requests
-django==4.2.18
+django==4.2.19
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -46,7 +46,7 @@ multidict==6.1.0
     # via yarl
 ordered-set==4.1.0
     # via -r requirements.in
-propcache==0.2.1
+propcache==0.3.0
     # via yarl
 psycopg2==2.9.10
     # via -r requirements.in
@@ -56,7 +56,7 @@ pyyaml==6.0.2
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.12.1
+rapidfuzz==3.12.2
     # via archivessnake
 requests==2.32.3
     # via
