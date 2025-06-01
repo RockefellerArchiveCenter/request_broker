@@ -14,9 +14,9 @@ boltons==25.0.0
     # via archivessnake
 certifi==2025.4.26
     # via requests
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
-django==4.2.20
+django==4.2.21
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -42,7 +42,7 @@ inflect==6.0.5
     # via -r requirements.in
 more-itertools==10.7.0
     # via archivessnake
-multidict==6.4.3
+multidict==6.4.4
     # via yarl
 ordered-set==4.1.0
     # via -r requirements.in
