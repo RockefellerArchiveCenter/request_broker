@@ -6,13 +6,13 @@
 #
 archivessnake==0.10.1
     # via -r requirements.in
-asgiref==3.8.1
+asgiref==3.9.1
     # via django
 attrs==25.3.0
     # via archivessnake
 boltons==25.0.0
     # via archivessnake
-certifi==2025.6.15
+certifi==2025.7.14
     # via requests
 charset-normalizer==3.4.2
     # via requests
@@ -68,7 +68,7 @@ sqlparse==0.5.3
     # via django
 structlog==25.4.0
     # via archivessnake
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   asgiref
     #   multidict
