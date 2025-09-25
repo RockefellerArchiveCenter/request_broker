@@ -63,7 +63,11 @@ sqlparse==0.5.3
 structlog==25.4.0
     # via archivessnake
 typing-extensions==4.15.0
-    # via pydantic
+    # via
+    #   asgiref
+    #   multidict
+    #   pydantic
+    #   structlog
 urllib3==2.5.0
     # via
     #   requests
