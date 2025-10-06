@@ -46,7 +46,7 @@ psycopg2==2.9.10
     # via -r requirements.in
 pydantic==1.10.24
     # via inflect
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via
     #   archivessnake
     #   vcrpy
