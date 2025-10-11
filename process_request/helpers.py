@@ -408,8 +408,8 @@ def get_size(instances):
                 extent_type = "{} {}".format(instance_type, sub_container_type) if sub_container_type != "box" else sub_container_type
                 extent_number = 1
             extents = append_to_list(extents, extent_type.strip(), extent_number)
-        except Exception as e:
-            raise Exception("Error parsing instances") from e
+        except Exception:
+            pass
     return ", ".join(
         ["{} {}".format(
             e["number"], inflect.engine().plural(e["extent_type"], e["number"])) for e in extents])

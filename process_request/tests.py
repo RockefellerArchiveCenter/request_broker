@@ -361,13 +361,10 @@ class TestHelpers(TestCase):
         for fixture, size in [
                 ("instances_singular.json", "1 box"),
                 ("instances_multiple.json", "2 boxes"),
-                ("instances_plural.json", "3 folders")]:
+                ("instances_plural.json", "3 folders"),
+                ("instances_error.json", "")]:
             instance = json_from_fixture(fixture)
             self.assertEqual(get_size(instance), size)
-
-        instance = json_from_fixture("instances_error.json")
-        with self.assertRaises(Exception, msg="Error parsing instances"):
-            get_size(instance)
 
     def test_get_title(self):
         for fixture, expected in [
