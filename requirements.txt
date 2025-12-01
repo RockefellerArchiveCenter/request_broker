@@ -1,16 +1,16 @@
 archivessnake==0.10.1
     # via -r requirements.in
-asgiref==3.10.0
+asgiref==3.11.0
     # via django
 attrs==25.4.0
     # via archivessnake
 boltons==25.0.0
     # via archivessnake
-certifi==2025.10.5
+certifi==2025.11.12
     # via requests
 charset-normalizer==3.4.4
     # via requests
-django==4.2.25
+django==4.2.26
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -58,7 +58,7 @@ requests==2.32.5
     #   archivessnake
 shortuuid==1.0.13
     # via -r requirements.in
-sqlparse==0.5.3
+sqlparse==0.5.4
     # via django
 structlog==25.5.0
     # via archivessnake
@@ -74,7 +74,7 @@ urllib3==2.5.0
     #   vcrpy
 vcrpy==7.0.0
     # via -r requirements.in
-wrapt==2.0.0
+wrapt==2.0.1
     # via vcrpy
 yarl==1.22.0
     # via vcrpy
