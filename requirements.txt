@@ -6,11 +6,11 @@ attrs==26.1.0
     # via archivessnake
 boltons==25.0.0
     # via archivessnake
-certifi==2026.2.25
+certifi==2026.4.22
     # via requests
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
-django==4.2.29
+django==4.2.30
     # via
     #   -r requirements.in
     #   django-common-helpers
@@ -28,13 +28,13 @@ django4-cron==0.5.1
     # via -r requirements.in
 djangorestframework==3.17.1
     # via -r requirements.in
-idna==3.11
+idna==3.13
     # via
     #   requests
     #   yarl
 inflect==6.0.5
     # via -r requirements.in
-more-itertools==10.8.0
+more-itertools==11.0.2
     # via archivessnake
 multidict==6.7.1
     # via yarl
@@ -42,7 +42,7 @@ ordered-set==4.1.0
     # via -r requirements.in
 propcache==0.4.1
     # via yarl
-psycopg2==2.9.11
+psycopg2==2.9.12
     # via -r requirements.in
 pydantic==1.10.26
     # via inflect
@@ -50,7 +50,7 @@ pyyaml==6.0.3
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.14.3
+rapidfuzz==3.14.5
     # via archivessnake
 requests==2.33.1
     # via
