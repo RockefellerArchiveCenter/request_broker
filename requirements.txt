@@ -8,7 +8,7 @@ boltons==26.1.0
     # via archivessnake
 certifi==2026.7.22
     # via requests
-charset-normalizer==3.4.9
+charset-normalizer==3.5.1
     # via requests
 django==4.2.30
     # via
@@ -26,9 +26,9 @@ django-csp==3.8
     # via -r requirements.in
 django4-cron==0.5.1
     # via -r requirements.in
-djangorestframework==3.17.1
+djangorestframework==3.17.2
     # via -r requirements.in
-idna==3.18
+idna==3.19
     # via
     #   requests
     #   yarl
@@ -58,7 +58,7 @@ requests==2.34.2
     #   archivessnake
 shortuuid==1.0.13
     # via -r requirements.in
-sqlparse==0.5.5
+sqlparse==0.6.0
     # via django
 structlog==26.1.0
     # via archivessnake
@@ -74,7 +74,7 @@ urllib3==2.7.0
     #   vcrpy
 vcrpy==7.0.0
     # via -r requirements.in
-wrapt==2.3.0
+wrapt==2.4.0
     # via vcrpy
 yarl==1.24.5
     # via vcrpy
