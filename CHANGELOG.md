@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.1.6](https://github.com/RockefellerArchiveCenter/request_broker/compare/request-broker-v3.1.5...request-broker-v3.1.6) (2026-10-22)
+
+
+### Bug Fixes
+
+* update pip ([7badb51](https://github.com/RockefellerArchiveCenter/request_broker/commit/7badb510d3955e8f273240c7512e1db404075638))
+* update pip ([7badb51](https://github.com/RockefellerArchiveCenter/request_broker/commit/7badb510d3955e8f273240c7512e1db404075638))
+* update pip ([fa0e177](https://github.com/RockefellerArchiveCenter/request_broker/commit/fa0e1772cbc5ed3c02fecba178ff27cc7c408452))
+* update pip ([fa0e177](https://github.com/RockefellerArchiveCenter/request_broker/commit/fa0e1772cbc5ed3c02fecba178ff27cc7c408452))
+* update pip ([f669ea4](https://github.com/RockefellerArchiveCenter/request_broker/commit/f669ea46825fd351f2e29868b78affbc11fc4b26))
+
 ## [3.1.5](https://github.com/RockefellerArchiveCenter/request_broker/compare/request-broker-v3.1.4...request-broker-v3.1.5) (2026-10-05)
 
 
