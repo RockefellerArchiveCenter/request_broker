@@ -6,7 +6,7 @@ attrs==26.1.0
     # via archivessnake
 boltons==26.2.0
     # via archivessnake
-certifi==2026.7.22
+certifi==2026.10.19
     # via requests
 charset-normalizer==3.5.2
     # via requests
@@ -36,7 +36,7 @@ inflect==6.0.5
     # via -r requirements.in
 more-itertools==11.1.0
     # via archivessnake
-multidict==7.0.0
+multidict==7.1.0
     # via yarl
 ordered-set==4.1.0
     # via -r requirements.in
@@ -74,7 +74,7 @@ urllib3==2.8.0
     #   vcrpy
 vcrpy==7.0.0
     # via -r requirements.in
-wrapt==2.5.0
+wrapt==2.5.1
     # via vcrpy
 yarl==1.25.1
     # via vcrpy
