@@ -34,7 +34,7 @@ idna==3.20
     #   yarl
 inflect==6.0.5
     # via -r requirements.in
-more-itertools==11.2.1
+more-itertools==11.1.0
     # via archivessnake
 multidict==7.1.0
     # via yarl
@@ -50,7 +50,7 @@ pyyaml==6.0.3
     # via
     #   archivessnake
     #   vcrpy
-rapidfuzz==3.14.6
+rapidfuzz==3.14.5
     # via archivessnake
 requests==2.34.2
     # via
@@ -63,7 +63,11 @@ sqlparse==0.6.0
 structlog==26.1.0
     # via archivessnake
 typing-extensions==4.16.0
-    # via pydantic
+    # via
+    #   asgiref
+    #   multidict
+    #   pydantic
+    #   structlog
 urllib3==2.8.0
     # via
     #   requests
