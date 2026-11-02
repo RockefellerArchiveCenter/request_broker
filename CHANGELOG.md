@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.1.7](https://github.com/RockefellerArchiveCenter/request_broker/compare/request-broker-v3.1.6...request-broker-v3.1.7) (2026-11-02)
+
+
+### Bug Fixes
+
+* **deps:** Scheduled dependency updates ([5ce627d](https://github.com/RockefellerArchiveCenter/request_broker/commit/5ce627d1220c8c2c707e0347ca031b55f9345357))
+* **deps:** Scheduled dependency updates ([5ce627d](https://github.com/RockefellerArchiveCenter/request_broker/commit/5ce627d1220c8c2c707e0347ca031b55f9345357))
+* **deps:** Scheduled dependency updates ([b6270aa](https://github.com/RockefellerArchiveCenter/request_broker/commit/b6270aa3b225a2c430ab48d1c90da4b3d033929d))
+* **deps:** Scheduled dependency updates ([b6270aa](https://github.com/RockefellerArchiveCenter/request_broker/commit/b6270aa3b225a2c430ab48d1c90da4b3d033929d))
+* **deps:** Scheduled dependency updates ([2c13e17](https://github.com/RockefellerArchiveCenter/request_broker/commit/2c13e17c9b9fc2213ba8294338b810cf51f4f0c8))
+
 ## [3.1.6](https://github.com/RockefellerArchiveCenter/request_broker/compare/request-broker-v3.1.5...request-broker-v3.1.6) (2026-10-22)
 
 
