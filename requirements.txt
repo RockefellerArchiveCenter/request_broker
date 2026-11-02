@@ -6,7 +6,7 @@ attrs==26.1.0
     # via archivessnake
 boltons==26.2.0
     # via archivessnake
-certifi==2026.10.19
+certifi==2026.10.23
     # via requests
 charset-normalizer==3.5.2
     # via requests
@@ -44,7 +44,7 @@ propcache==0.5.4
     # via yarl
 psycopg2==2.9.13
     # via -r requirements.in
-pydantic==1.10.26
+pydantic==1.10.27
     # via inflect
 pyyaml==6.0.3
     # via
@@ -74,7 +74,7 @@ urllib3==2.8.0
     #   vcrpy
 vcrpy==7.0.0
     # via -r requirements.in
-wrapt==2.5.1
+wrapt==2.5.2
     # via vcrpy
 yarl==1.25.1
     # via vcrpy
